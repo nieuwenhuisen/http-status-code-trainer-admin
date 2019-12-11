@@ -15,7 +15,7 @@ const headers = () => {
 };
 
 const logout = () => {
-    window.localStorage.removeItem('token');
+    localStorage.removeItem('token');
     window.location.href = '/';
 };
 
@@ -26,7 +26,7 @@ const fetchHydra = (url, options = {}) => baseFetchHydra(url, {
     .catch((data) => {
         if (typeof data.response !== 'undefined' && typeof data.response.status !== 'undefined' && data.response.status === 401) {
             logout();
-            return;
+            return Promise.resolve();
         }
 
         return Promise.reject(data);
@@ -38,6 +38,7 @@ const apiDocumentationParser = (entrypoint) => parseHydraDocumentation(entrypoin
         (result) => {
             if (result.status === 401) {
                 logout();
+                return Promise.resolve();
             }
             return Promise.reject(result);
         },
