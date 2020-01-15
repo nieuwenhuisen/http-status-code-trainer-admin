@@ -1,6 +1,6 @@
 import { createStyles } from '@material-ui/core';
 
-export default ({ spacing }) => createStyles({
+export default () => createStyles({
     main: {
         display: 'flex',
         flexDirection: 'column',
@@ -33,8 +33,6 @@ export default ({ spacing }) => createStyles({
     button: {
         width: '100%',
         marginTop: '3em',
-    },
-    icon: {
-        marginRight: spacing.unit,
-    },
+        color: 'white'
+    }
 });

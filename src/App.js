@@ -1,6 +1,8 @@
 import React from "react";
 import { HydraAdmin } from "@api-platform/admin";
 import { Layout, Resource } from 'react-admin';
+import polyglotI18nProvider from 'ra-i18n-polyglot';
+import messages from 'ra-language-dutch';
 
 // Import pages
 import { LoginPage } from './pages/login';
@@ -13,11 +15,12 @@ const entrypoint = process.env.REACT_APP_API_ENTRYPOINT;
 
 export default () => (
     <HydraAdmin
+        i18nProvider={polyglotI18nProvider(() => messages, 'nl')}
         dataProvider={dataProvider}
         loginPage={LoginPage}
-        authProvider={authProvider(entrypoint)}
+        authProvider={authProvider}
         entrypoint={entrypoint}
-        appLayout={Layout}
+        layout={Layout}
         >
             <Resource name="users" list={UserListPage} edit={UserEditPage} />
             <Resource name="status_codes" list={StatusCodeListPage} edit={StatusCodeEditPage} />

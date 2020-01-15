@@ -1,85 +1,113 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import compose from 'recompose/compose';
+import { useLogin, useNotify } from 'react-admin';
+import { ThemeProvider } from '@material-ui/styles';
 import classnames from 'classnames';
-import { withTranslate, userLogin } from 'ra-core';
-import { Field, reduxForm } from 'redux-form';
-import {
-    CircularProgress, TextField, Button, CardActions, Card, MuiThemeProvider, createMuiTheme, withStyles,
-} from '@material-ui/core';
-import { Notification } from 'react-admin';
+import {CircularProgress, TextField, Button, CardActions, Card, withStyles} from '@material-ui/core';
 import styles from './login.styles';
+import { withTranslate } from 'ra-core';
+import { Notification } from 'react-admin';
 
-const renderInput = ({ meta: { touched, error } = { touched: false, error: '' }, input: { ...inputProps }, ...props }) => (
-    <TextField
-        error={!!(touched && error)}
-        helperText={touched && error}
-        {...inputProps}
-        {...props}
-        fullWidth
-    />
-);
+const LoginPageComponent = ({ isLoading, classes, translate, className, theme }) => {
+    const [username, setUsername] = useState('');
+    const [usernameError, setUsernameError] = useState(false);
+    const [password, setPassword] = useState('');
+    const [passwordError, setPasswordError] = useState(false);
 
-const login = (auth, dispatch, { redirectTo }) => dispatch(userLogin(auth, redirectTo));
+    const login = useLogin();
+    const notify = useNotify();
 
-const LoginPage = ({ handleSubmit, isLoading, classes, translate, className, theme }) => (
-    <MuiThemeProvider theme={createMuiTheme(theme)}>
-        <Notification />
+    const submit = (e) => {
+        e.preventDefault();
 
-        <div className={classnames(classes.main, className)}>
-            <Card className={classes.card}>
-                <div className={classes.logo}>
-                    ADMIN
-                </div>
+        let valid = true;
 
-                <form onSubmit={handleSubmit(login)} className="form-signin" autoComplete="off">
-                    <div className={classes.form}>
-                        <div className={classes.input}>
-                            <Field
-                                autoFocus
-                                id="username"
-                                name="username"
-                                component={renderInput}
-                                label={translate('ra.auth.username')}
-                                disabled={isLoading}
-                            />
-                        </div>
+        if (username.length === 0) {
+            setUsernameError(translate('ra.validation.required'));
+            valid = false;
+        }
 
-                        <div className={classes.input}>
-                            <Field
-                                id="password"
-                                name="password"
-                                component={renderInput}
-                                label={translate('ra.auth.password')}
-                                type="password"
-                                disabled={isLoading}
-                            />
-                        </div>
+        if (password.length === 0) {
+            setPasswordError(translate('ra.validation.required'));
+            valid = false;
+        }
+
+        if (valid) {
+            login({ username, password })
+                .catch(() => notify('ra.auth.sign_in_error'));
+        }
+    };
+
+    return (
+        <ThemeProvider theme={theme}>
+            <Notification />
+
+            <div className={classnames(classes.main, className)}>
+                <Card className={classes.card}>
+                    <div className={classes.logo}>
+                        ADMIN
                     </div>
 
-                    <CardActions>
-                        <Button
-                            variant="raised"
-                            type="submit"
-                            color="primary"
-                            disabled={isLoading}
-                            className={classes.button}
-                        >
-                            {isLoading && (
-                                <CircularProgress
-                                    className={classes.icon}
-                                    size={18}
-                                    thickness={2}
+                    <form onSubmit={submit} className="form-signin" autoComplete="off">
+                        <div className={classes.form}>
+                            <div className={classes.input}>
+                                <TextField
+                                    id="username"
+                                    name="username"
+                                    label={translate('ra.auth.username')}
+                                    type="text"
+                                    error={!!usernameError}
+                                    helperText={usernameError}
+                                    disabled={isLoading}
+                                    autoComplete="username"
+                                    value={username}
+                                    fullWidth
+                                    onChange={e => setUsername(e.target.value)}
                                 />
-                            )}
-                            {translate('ra.auth.sign_in')}
-                        </Button>
-                    </CardActions>
-                </form>
-            </Card>
-        </div>
-    </MuiThemeProvider>
-);
+                            </div>
+
+                            <div className={classes.input}>
+                                <TextField
+                                    id="password"
+                                    name="password"
+                                    label={translate('ra.auth.password')}
+                                    error={!!passwordError}
+                                    helperText={passwordError}
+                                    type="password"
+                                    disabled={isLoading}
+                                    value={password}
+                                    autoComplete="current-password"
+                                    fullWidth
+                                    onChange={e => setPassword(e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        <CardActions>
+                            <Button
+                                variant="contained"
+                                type="submit"
+                                color="primary"
+                                disabled={isLoading}
+                                className={classes.button}
+                            >
+                                {isLoading && (
+                                    <CircularProgress
+                                        className={classes.icon}
+                                        size={18}
+                                        thickness={2}
+                                    />
+                                )}
+                                {translate('ra.auth.sign_in')}
+                            </Button>
+                        </CardActions>
+                    </form>
+                </Card>
+            </div>
+        </ThemeProvider>
+    );
+};
 
 const mapStateToProps = (state) => ({
     isLoading: state.admin.loading > 0,
@@ -89,18 +117,4 @@ export default compose(
     withStyles(styles),
     withTranslate,
     connect(mapStateToProps),
-    reduxForm({
-        form: 'signIn',
-        validate: (values, props) => {
-            const errors = { username: '', password: '' };
-            const { translate } = props;
-            if (!values.username) {
-                errors.username = translate('ra.validation.required');
-            }
-            if (!values.password) {
-                errors.password = translate('ra.validation.required');
-            }
-            return errors;
-        },
-    }),
-)(LoginPage);
+)(LoginPageComponent);
