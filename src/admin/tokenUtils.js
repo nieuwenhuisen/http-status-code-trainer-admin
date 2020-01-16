@@ -1,8 +1,5 @@
 import jwtDecode from "jwt-decode";
 
-const TOKEN_KEY = 'token';
-const REFRESH_TOKEN_KEY = 'refresh_token';
-
 function isTokenExpired() {
     const token = getToken();
 
@@ -17,12 +14,7 @@ function isTokenExpired() {
 }
 
 function getToken() {
-    return localStorage.getItem(TOKEN_KEY);
-}
-
-function setToken(token, refreshToken) {
-    localStorage.setItem(TOKEN_KEY, token);
-    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+    return localStorage.getItem('token');
 }
 
 function isTokenValid() {
@@ -30,12 +22,12 @@ function isTokenValid() {
 }
 
 function clearToken() {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    localStorage.removeItem('token');
+    localStorage.removeItem('refresh_token');
 }
 
 function getRefreshToken() {
-    return localStorage.getItem(REFRESH_TOKEN_KEY);
+    return localStorage.getItem('refresh_token');
 }
 
 export default {

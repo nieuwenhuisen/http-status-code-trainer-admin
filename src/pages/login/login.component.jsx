@@ -4,7 +4,7 @@ import compose from 'recompose/compose';
 import { useLogin, useNotify } from 'react-admin';
 import { ThemeProvider } from '@material-ui/styles';
 import classnames from 'classnames';
-import {CircularProgress, TextField, Button, CardActions, Card, withStyles} from '@material-ui/core';
+import { CircularProgress, TextField, Button, CardActions, Card, withStyles } from '@material-ui/core';
 import styles from './login.styles';
 import { withTranslate } from 'ra-core';
 import { Notification } from 'react-admin';

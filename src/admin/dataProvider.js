@@ -15,37 +15,38 @@ const headers = () => {
     return new Headers(values);
 };
 
-const logout = () => {
-    console.log('logout');
-    // localStorage.removeItem('token');
-    // window.location.href = '/#/login';
-};
-
-const fetchHydra = (url, options = {}) => baseFetchHydra(url, {
-    ...options,
-    headers: headers(),
-})
-    .catch((data) => {
-        if (typeof data.response !== 'undefined' && typeof data.response.status !== 'undefined' && data.response.status === 401) {
-            console.log('fetchHydra', data);
-            logout();
-            return Promise.resolve();
-        }
-
-        return Promise.reject(data);
+async function refreshToken()
+{
+    const request = new Request(`${entrypoint}/token/refresh`, {
+        method: 'POST',
+        body: JSON.stringify({refresh_token: token.getRefreshToken()}),
+        headers: new Headers({'Content-Type': 'application/json'}),
     });
 
-const apiDocumentationParser = (entrypoint) => parseHydraDocumentation(entrypoint, { headers: headers() })
-    .then(
-        ({ api }) => ({ api }),
-        (result) => {
-            if (result.status === 401) {
-                console.log('apiDocumentationParser');
-                logout();
-                return Promise.resolve();
-            }
-            return Promise.reject(result);
-        },
-    );
+    const response = await fetch(request);
+    const json = await response.json();
+
+    localStorage.setItem('token', json.token);
+    localStorage.setItem('refresh_token', json.refresh_token);
+}
+
+const fetchHydra = async (url, options = {}) => {
+    if (token.isExpired() && token.getRefreshToken()) {
+        await refreshToken();
+    }
+
+    return baseFetchHydra(url, {
+        ...options,
+        headers: headers(),
+    });
+};
+
+const apiDocumentationParser = async (url) => {
+    if (token.isExpired() && token.getRefreshToken()) {
+        await refreshToken();
+    }
+
+    return parseHydraDocumentation(url, { headers: headers() });
+};
 
 export default baseDataProvider(entrypoint, fetchHydra, apiDocumentationParser);
