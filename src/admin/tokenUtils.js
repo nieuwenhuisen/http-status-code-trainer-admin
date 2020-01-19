@@ -1,16 +1,45 @@
 import jwtDecode from "jwt-decode";
 
-function isTokenExpired() {
-    const token = getToken();
+let payload = false;
 
-    if (!token) {
-        return false;
+function getPayload() {
+    if (false === payload && getToken()) {
+        const token = getToken();
+        payload = jwtDecode(token);
     }
 
-    const decoded = jwtDecode(token);
+    return payload;
+}
+
+function clearPayload() {
+    payload = false;
+}
+
+function isTokenExpired() {
+    const decoded = getPayload();
     const now = Math.floor(Date.now() / 1000);
 
     return decoded.exp < now;
+}
+
+function isMultiFactorAuthenticationEnabled() {
+    const decoded = getPayload();
+
+    if (typeof decoded.mfa_enabled === 'undefined') {
+        return false;
+    }
+
+    return true === decoded.mfa_enabled;
+}
+
+function isMultiFactorAuthenticationVerified() {
+    const decoded = getPayload();
+
+    if (typeof decoded.mfa_verified === 'undefined') {
+        return false;
+    }
+
+    return true === decoded.mfa_verified;
 }
 
 function getToken() {
@@ -32,8 +61,11 @@ function getRefreshToken() {
 
 export default {
     get: getToken,
-    getRefreshToken: getRefreshToken,
+    getRefreshToken,
     valid: isTokenValid,
     clear: clearToken,
+    clearPayload,
     isExpired: isTokenExpired,
+    isMultiFactorAuthenticationEnabled,
+    isMultiFactorAuthenticationVerified,
 };
