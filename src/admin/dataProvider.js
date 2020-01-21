@@ -35,18 +35,15 @@ const fetchHydra = async (url, options = {}) => {
         await refreshToken();
     }
 
+    if (token.isMultiFactorAuthenticationEnabled() && !token.isMultiFactorAuthenticationVerified()) {
+        return;
+    }
+
     return baseFetchHydra(url, {
         ...options,
         headers: headers(),
     });
 };
 
-const apiDocumentationParser = async (url) => {
-    if (token.isExpired() && token.getRefreshToken()) {
-        await refreshToken();
-    }
-
-    return parseHydraDocumentation(url, { headers: headers() });
-};
-
+const apiDocumentationParser = (url) => parseHydraDocumentation(url);
 export default baseDataProvider(entrypoint, fetchHydra, apiDocumentationParser);

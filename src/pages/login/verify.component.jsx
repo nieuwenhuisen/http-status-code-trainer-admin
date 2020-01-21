@@ -5,7 +5,6 @@ import classnames from 'classnames';
 import { CircularProgress, TextField, Button, CardActions, Card, withStyles } from '@material-ui/core';
 import styles from './login.styles';
 import { withTranslate } from 'ra-core';
-import { Notification } from 'react-admin';
 
 import { createMuiTheme } from '@material-ui/core/styles';
 import authProvider from '../../admin/authProvider';
@@ -22,7 +21,7 @@ const theme = createMuiTheme({
     },
 });
 
-const LoginVerifyPageComponent = ({ classes, translate, history, className }) => {
+const LoginVerifyPageComponent = ({ classes, translate, className }) => {
     const [code, setCode] = useState('');
     const [codeError, setCodeError] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -44,8 +43,8 @@ const LoginVerifyPageComponent = ({ classes, translate, history, className }) =>
         if (valid) {
             authProvider.verify(code)
                 .then(() => {
-                    history.push('/');
                     setIsLoading(false);
+                    window.location.href = '/';
                 })
                 .catch((error) => {
                     setCodeError(error.message);
@@ -58,8 +57,6 @@ const LoginVerifyPageComponent = ({ classes, translate, history, className }) =>
 
     return (
         <ThemeProvider theme={theme}>
-            <Notification />
-
             <div className={classnames(classes.main, className)}>
                 <Card className={classes.card}>
                     <div className={classes.logo}>

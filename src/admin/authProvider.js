@@ -47,17 +47,23 @@ export default {
             });
     },
     logout: () => {
-        tokenUtils.clear();
+        if (!tokenUtils.isMultiFactorAuthenticationEnabled() || tokenUtils.isMultiFactorAuthenticationVerified()) {
+            tokenUtils.clear();
+        }
+
         return Promise.resolve();
     },
-    checkAuth: (props) => {
+    checkAuth: () => {
         if (tokenUtils.isMultiFactorAuthenticationEnabled() && !tokenUtils.isMultiFactorAuthenticationVerified()) {
-            window.location.href = '/#/verify';
+            return Promise.reject({
+                redirectTo: '/verify',
+            });
         }
 
         return tokenUtils.get() ? Promise.resolve() : Promise.reject()
     },
     checkError: (error) => {
+
         const status = error.status;
         if (status === 401 || status === 403) {
             localStorage.removeItem('token');
